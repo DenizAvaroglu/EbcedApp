@@ -16,7 +16,7 @@ class EbcedApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Havvas Hesaplama',
+      title: 'Havass Hesaplama',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorSchemeSeed: Colors.indigo,
@@ -45,7 +45,7 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Havvas Hesaplama'),
+        title: const Text('Havass Hesaplama'),
         centerTitle: true,
       ),
       body: Padding(

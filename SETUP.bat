@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo  Havvas Hesaplama - Flutter Proje Kurulumu
+echo  Havass Hesaplama - Flutter Proje Kurulumu
 echo  (Ebced + Yildizname + Vefk)
 echo ============================================
 echo.

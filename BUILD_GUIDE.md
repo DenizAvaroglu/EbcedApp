@@ -1,4 +1,4 @@
-# Havvas Hesaplama - Build & Paketleme Rehberi
+# Havass Hesaplama - Build & Paketleme Rehberi
 
 ## Gereksinimler
 
