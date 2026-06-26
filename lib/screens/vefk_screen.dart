@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../utils/vefk_gram.dart';
+import 'teksir_tab.dart';
 import 'vefk_referans_screen.dart';
 
 // Grid position → cell index mappings for magic square arrangements
@@ -82,7 +83,7 @@ class VefkScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Vefk Hesaplama'),
@@ -95,10 +96,12 @@ class VefkScreen extends StatelessWidget {
             ),
           ],
           bottom: const TabBar(
+            isScrollable: true,
             tabs: [
               Tab(text: "3'lü Vefk"),
               Tab(text: "4'lü Vefk"),
               Tab(text: "5'li Vefk"),
+              Tab(text: 'Teksir'),
             ],
           ),
         ),
@@ -107,7 +110,12 @@ class VefkScreen extends StatelessWidget {
             VefkReferansButtonBar(),
             Expanded(
               child: TabBarView(
-                children: [_Vefk3Tab(), _Vefk4Tab(), _Vefk5Tab()],
+                children: [
+                  _Vefk3Tab(),
+                  _Vefk4Tab(),
+                  _Vefk5Tab(),
+                  TeksirTab(),
+                ],
               ),
             ),
           ],

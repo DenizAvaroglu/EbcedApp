@@ -90,7 +90,7 @@ class LandingPage extends StatelessWidget {
               context,
               icon: Icons.grid_4x4,
               title: 'Vefk Hesaplama',
-              subtitle: '3×3, 4×4, 5×5 vefk oluşturma',
+              subtitle: '3×3, 4×4, 5×5 vefk ve teksir',
               color: Colors.teal,
               onTap: () => Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const VefkScreen())),
