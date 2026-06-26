@@ -48,9 +48,6 @@ class _TeksirTabState extends State<TeksirTab> {
       case TeksirYontem.birSondanBirBastan:
         return 'Bir sondan, bir baştan harf alınır (ör: abcde → eadbc → …). '
             'İlk satırla aynı olan son satır dahil edilmez.';
-      case TeksirYontem.sutunlu:
-        return 'Son harf 1. sütuna, ilk harf 2. sütuna… (en fazla 20 harf). '
-            'İlk satırla aynı olan son satır dahil edilmez.';
       case TeksirYontem.simetrik:
         return _simetrikSonBasa
             ? 'Son harf başa alınır (abcde → eabcd → deabc …).'
@@ -88,18 +85,11 @@ class _TeksirTabState extends State<TeksirTab> {
             segments: const [
               ButtonSegment(
                 value: TeksirYontem.birSondanBirBastan,
-                label: Text('1. Yöntem', style: TextStyle(fontSize: 11)),
-                tooltip: 'Bir sondan bir baştan',
-              ),
-              ButtonSegment(
-                value: TeksirYontem.sutunlu,
-                label: Text('2. Yöntem', style: TextStyle(fontSize: 11)),
-                tooltip: 'Sütunlu (max 20 harf)',
+                label: Text('Bir sondan bir baştan', style: TextStyle(fontSize: 11)),
               ),
               ButtonSegment(
                 value: TeksirYontem.simetrik,
-                label: Text('3. Yöntem', style: TextStyle(fontSize: 11)),
-                tooltip: 'Simetrik döndürme',
+                label: Text('Simetrik', style: TextStyle(fontSize: 11)),
               ),
             ],
             selected: {_yontem},

@@ -2,7 +2,6 @@ import 'ebced_calculator.dart';
 
 enum TeksirYontem {
   birSondanBirBastan,
-  sutunlu,
   simetrik,
 }
 
@@ -23,19 +22,13 @@ List<int> _kaynakIndeksleri(int n) {
   return indices;
 }
 
-/// Yöntem 1: Bir sondan bir baştan harf dizilimi.
+/// Bir sondan bir baştan harf dizilimi (20 adımlı sütunlu kural ile aynı sonuç).
 List<String> teksir1Adim(List<String> harfler) {
   final kaynak = _kaynakIndeksleri(harfler.length);
   return [for (final i in kaynak) harfler[i]];
 }
 
-/// Yöntem 2: Sütunlu (20 adımlı kuralın ilk n adımı — 5 harfte 5 adım).
-/// Kaynak seçimi yöntem 1 ile aynı; harfler sütun sırasına yerleştirilir.
-List<String> teksir2Adim(List<String> harfler) {
-  return teksir1Adim(harfler);
-}
-
-/// Yöntem 3: Simetrik döndürme.
+/// Simetrik döndürme.
 /// [sonBasa]: son harf başa (abcde → eabcd)
 /// değilse: baş harf sona (abcde → bcdea)
 List<String> teksir3Adim(List<String> harfler, {required bool sonBasa}) {
@@ -72,21 +65,13 @@ List<List<String>> teksirSatirlari(
   List<String> harfler, {
   required TeksirYontem yontem,
   bool simetrikSonBasa = true,
-  int? maxHarf,
 }) {
   if (harfler.isEmpty) return [];
-
-  final limit = maxHarf ?? (yontem == TeksirYontem.sutunlu ? 20 : harfler.length);
-  if (harfler.length > limit) {
-    throw ArgumentError('En fazla $limit harf girilebilir.');
-  }
 
   List<String> sonraki(List<String> mevcut) {
     switch (yontem) {
       case TeksirYontem.birSondanBirBastan:
         return teksir1Adim(mevcut);
-      case TeksirYontem.sutunlu:
-        return teksir2Adim(mevcut);
       case TeksirYontem.simetrik:
         return teksir3Adim(mevcut, sonBasa: simetrikSonBasa);
     }
@@ -101,7 +86,7 @@ List<List<String>> teksirSatirlari(
     if (_ayniSatir(yeni, ilk)) break;
     satirlar.add(yeni);
     mevcut = yeni;
-    if (satirlar.length > 100) break; // güvenlik
+    if (satirlar.length > 100) break;
   }
 
   return satirlar;
