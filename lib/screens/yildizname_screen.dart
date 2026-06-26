@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/ebced_calculator.dart';
+import '../utils/yildizname_calc.dart';
 
 class YildizNameScreen extends StatefulWidget {
   const YildizNameScreen({super.key});
@@ -16,15 +17,7 @@ class _YildizNameScreenState extends State<YildizNameScreen> {
   DateTime _dogumTarihi = DateTime(2000, 1, 1);
   DateTime _bugunTarihi = DateTime.now();
 
-  final List<String> _gezegenler = [
-    'Güneş',
-    'Ay',
-    'Mars',
-    'Merkür',
-    'Jüpiter',
-    'Venüs',
-    'Satürn',
-  ];
+  final List<String> _gezegenler = YildiznameCalc.gezegenler;
 
   final Set<int> _seciliGezegenler = {};
 
@@ -40,18 +33,6 @@ class _YildizNameScreenState extends State<YildizNameScreen> {
 
   final Map<String, List<String>> _analizSonuclari = {};
   String? _evlilikSonucu;
-
-  // --- Unsur (Element) tablosu ---
-  static const Map<String, String> _harfUnsur = {
-    'ا': 'Ateş', 'ه': 'Ateş', 'ط': 'Ateş', 'م': 'Ateş',
-    'ف': 'Ateş', 'ش': 'Ateş', 'ذ': 'Ateş',
-    'ب': 'Toprak', 'و': 'Toprak', 'ي': 'Toprak', 'ن': 'Toprak',
-    'ص': 'Toprak', 'ت': 'Toprak', 'ض': 'Toprak',
-    'ج': 'Hava', 'ز': 'Hava', 'ك': 'Hava', 'س': 'Hava',
-    'ق': 'Hava', 'ث': 'Hava', 'ظ': 'Hava',
-    'د': 'Su', 'ح': 'Su', 'ل': 'Su', 'ع': 'Su',
-    'ر': 'Su', 'خ': 'Su', 'غ': 'Su',
-  };
 
   // --- Gezegen yorumları (7 gezegen × 6 kategori) — orijinal detaylı metinler ---
   static final Map<String, Map<int, String>> _gezegenYorumlari = {
@@ -111,60 +92,26 @@ class _YildizNameScreenState extends State<YildizNameScreen> {
     },
   };
 
-  // --- Evlilik yorumları (9 sonuç) ---
+  // --- Evlilik yorumları (9 sonuç) — orijinal metinler ---
   static const Map<int, String> _evlilikYorumlari = {
-    0: 'Mükemmel uyum! Bu çift birbirini tamamlıyor, güçlü bir bağ.',
-    1: 'İyi bir uyum. Karşılıklı saygı ve anlayış ile mutlu bir birliktelik.',
-    2: 'Uyumlu bir çift. Küçük farklılıklar zenginlik katıyor.',
-    3: 'Orta düzey uyum. İletişim güçlendirilmeli.',
-    4: 'Zorlayıcı ama öğretici bir ilişki. Sabır gerektirir.',
-    5: 'Farklılıklar belirgin. Ortak noktalar bulmak önemli.',
-    6: 'Zor bir kombinasyon. Karşılıklı fedakarlık şart.',
-    7: 'Çatışma potansiyeli yüksek. Profesyonel destek faydalı olabilir.',
-    8: 'Çok zor bir uyum. Ancak güçlü irade ile sürdürülebilir.',
+    0: 'Uygun değildir, uğursuz olacaktır.',
+    1: 'Boşanma ile sonlanır aralarına ayrılık girer.',
+    2: 'Saadet ve hoşluk hasıl olacaktır.',
+    3: 'Gençlikte yokluk ve zorluk yaş ilerledikçe yaşlarda bolluk ve saadet olur.',
+    4: 'Uğursuzluk ve kötü haller yaşanır eşlerden biri ihanet edebilir.',
+    5: 'Çok mal ve evlada işaret olur.',
+    6: 'Sürekli sıkıntılar ve geçimsizlik olur.',
+    7: 'Eşler birbirlerini çok sever ve hayırlı bir birliktelikleri olur.',
+    8: 'Bol rızıkları olacaktır.',
   };
 
-  // --- Miladi → Hicri çevrim ---
-  static Map<String, int> miladiToHicri(int year, int month, int day) {
-    int a = ((14 - month) / 12).floor();
-    int y = year + 4800 - a;
-    int m = month + 12 * a - 3;
-    int jd = day +
-        ((153 * m + 2) / 5).floor() +
-        365 * y +
-        (y / 4).floor() -
-        (y / 100).floor() +
-        (y / 400).floor() -
-        32045;
+  // --- Miladi → Hicri çevrim (orijinal script.js JD algoritması) ---
+  static Map<String, int> miladiToHicri(int year, int month, int day) =>
+      YildiznameCalc.miladiToHicri(year, month, day);
 
-    int l = jd - 1948440 + 10632;
-    int n = ((l - 1) / 10631).floor();
-    l = l - 10631 * n + 354;
-    int j = ((10985 - l) / 5316).floor() * ((50 * l) / 17719).floor() +
-        ((l) / 5670).floor() * ((43 * l) / 15238).floor();
-    l = l -
-        ((30 - j) / 15).floor() * ((17719 * j) / 50).floor() -
-        ((j) / 16).floor() * ((15238 * j) / 43).floor() +
-        29;
-    int hMonth = ((24 * l) / 709).floor();
-    int hDay = l - ((709 * hMonth) / 24).floor();
-    int hYear = 30 * n + j - 30;
-
-    return {'year': hYear, 'month': hMonth, 'day': hDay};
-  }
-
-  // --- Unsur hesaplama ---
-  Map<String, int> _unsurHesapla(String metin) {
-    final dagilim = {'Ateş': 0, 'Toprak': 0, 'Hava': 0, 'Su': 0};
-    final temiz = EbcedCalculator.temizle(metin);
-    for (int i = 0; i < temiz.length; i++) {
-      final c = temiz[i];
-      if (_harfUnsur.containsKey(c)) {
-        dagilim[_harfUnsur[c]!] = dagilim[_harfUnsur[c]!]! + 1;
-      }
-    }
-    return dagilim;
-  }
+  // --- Unsur hesaplama (harf sırası 1-7 toplamı — orijinal mantık) ---
+  Map<String, int> _unsurHesapla(String metin) =>
+      YildiznameCalc.elementAnaliz(metin);
 
   void _hesaplaEbced() {
     final isim = _isimController.text.trim();
@@ -212,55 +159,74 @@ class _YildizNameScreenState extends State<YildizNameScreen> {
         miladiToHicri(
             _bugunTarihi.year, _bugunTarihi.month, _bugunTarihi.day);
 
-    int birthPlanet;
-    int currentPlanet;
+    int mod7(int v) => YildiznameCalc.mod7(v);
+    final yorumlar = _gezegenYorumlari[kategori]!;
+
+    // Her kategori (etiket, gezegenIndex) çiftlerinden oluşur.
+    final List<(String, int)> gezegenler = [];
 
     switch (kategori) {
       case 'Kişilik':
-        birthPlanet = ebced % 7;
-        currentPlanet = (_bugunTarihi.year + _dogumTarihi.year) % 7;
+        // Orijinal: İsim(ebced%7) + Doğum(doğum yılı%7) + Bu Yılın + Saat
+        gezegenler.add(('🔤 İsim Gezegeni (ebced)', mod7(ebced)));
+        gezegenler
+            .add(('🌟 Doğum Gezegeni (doğum yılı)', mod7(_dogumTarihi.year)));
+        gezegenler.add((
+          '🔄 Bu Yılın Gezegeni',
+          mod7(_bugunTarihi.year + _dogumTarihi.year)
+        ));
         break;
       case 'Aile':
-        birthPlanet = _dogumTarihi.month % 7;
-        currentPlanet = (_bugunTarihi.month + _dogumTarihi.month) % 7;
+        gezegenler
+            .add(('🌟 Doğum Gezegeni (doğum ayı)', mod7(_dogumTarihi.month)));
+        gezegenler.add((
+          '🔄 Bu Yılın Gezegeni',
+          mod7(_bugunTarihi.month + _dogumTarihi.month)
+        ));
         break;
       case 'İş':
-        birthPlanet = _dogumTarihi.day % 7;
-        currentPlanet = (_bugunTarihi.day + _dogumTarihi.day) % 7;
+        gezegenler
+            .add(('🌟 Doğum Gezegeni (doğum günü)', mod7(_dogumTarihi.day)));
+        gezegenler.add((
+          '🔄 Bu Yılın Gezegeni',
+          mod7(_bugunTarihi.day + _dogumTarihi.day)
+        ));
         break;
       case 'İlişki':
-        birthPlanet = hD['year']! % 7;
-        currentPlanet = (hG['year']! + hD['year']!) % 7;
+        gezegenler.add(
+            ('🌟 Doğum Gezegeni (hicri doğum yılı)', mod7(hD['year']!)));
+        gezegenler.add(
+            ('🔄 Bu Yılın Gezegeni', mod7(hG['year']! + hD['year']!)));
         break;
       case 'Sağlık':
-        birthPlanet = hD['month']! % 7;
-        currentPlanet = (hG['month']! + hD['month']!) % 7;
+        gezegenler.add(
+            ('🌟 Doğum Gezegeni (hicri doğum ayı)', mod7(hD['month']!)));
+        gezegenler.add(
+            ('🔄 Bu Yılın Gezegeni', mod7(hG['month']! + hD['month']!)));
         break;
       case 'Sıkıntılar':
-        birthPlanet = hD['day']! % 7;
-        currentPlanet = (hG['day']! + hD['day']!) % 7;
+        gezegenler.add(
+            ('🌟 Doğum Gezegeni (hicri doğum günü)', mod7(hD['day']!)));
+        gezegenler.add(
+            ('🔄 Bu Yılın Gezegeni', mod7(hG['day']! + hD['day']!)));
         break;
       default:
         return;
     }
 
     // Gezegen saati: kategorinin sırasına denk gelen seçili gezegen.
-    // _seciliGezegenler ekleme sırasını korur (LinkedHashSet).
     final secimSirasi = _seciliGezegenler.toList();
     final saatSirasi = _kategoriSaatSirasi[kategori]!;
     final int? gezegenSaati =
         saatSirasi < secimSirasi.length ? secimSirasi[saatSirasi] : null;
 
-    final yorumlar = _gezegenYorumlari[kategori]!;
-
     setState(() {
       _analizSonuclari[kategori] = [
-        '🌟 Doğum Gezegeni: ${_gezegenler[birthPlanet]}',
-        yorumlar[birthPlanet] ?? '',
-        '',
-        '🔄 Güncel Gezegen: ${_gezegenler[currentPlanet]}',
-        yorumlar[currentPlanet] ?? '',
-        '',
+        for (final (etiket, idx) in gezegenler) ...[
+          '$etiket: ${_gezegenler[idx]}',
+          yorumlar[idx] ?? '',
+          '',
+        ],
         if (gezegenSaati != null) ...[
           '⏰ Gezegen Saati (${saatSirasi + 1}. seçim): ${_gezegenler[gezegenSaati]}',
           yorumlar[gezegenSaati] ?? '',
