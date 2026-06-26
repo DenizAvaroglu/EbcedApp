@@ -73,9 +73,38 @@ class _BastTabState extends State<BastTab> {
           if (_sonuc != null) ...[
             const SizedBox(height: 16),
             Text(
-              'Basamak: ${_sonuc!.basamak}. | ${_sonuc!.kelimeler.length} kelime',
+              '${_sonuc!.basamak}. Bast (${_sonuc!.erkek ? "erkek → 5'li" : "dişi → 4'lü"}) | '
+              '${_sonuc!.kelimeler.length} kelime',
               style: theme.textTheme.titleSmall
                   ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              color: Colors.teal.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Harf Nutku (açılım)',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal.shade800)),
+                    const SizedBox(height: 4),
+                    for (final a in _sonuc!.adimlar)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: Text(
+                            '${a.harf}  ·  ${a.deger}  →  ${a.acilim.join(" ")}',
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             Card(

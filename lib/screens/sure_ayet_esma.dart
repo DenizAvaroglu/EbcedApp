@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/isim_turu.dart';
+import '../utils/ayet_bolme.dart';
 import '../utils/ebced_calculator.dart';
 import '../utils/deger_bolme.dart';
 import '../widgets/isim_turu_dropdown.dart';
@@ -38,25 +39,9 @@ class _SureAyetEsmaScreenState extends State<SureAyetEsmaScreen>
   }
 
   // ═══════════════ SURE ═══════════════
-  // Ayetleri böler. Metinde ayet numarası (1. 2. 3. veya Arapça ٠١٢ /
-  // Farsça ۰۱۲ rakamları) varsa bunlara göre böler — böylece uzun ayetler
-  // alt satıra kaysa bile doğru sayılır. Numara yoksa satır sonlarına göre böler.
-  static List<String> _ayetlereBol(String metin) {
-    final numaraRegex = RegExp(r'[0-9\u0660-\u0669\u06F0-\u06F9\u06DD]+');
-    final numaraSayisi = numaraRegex.allMatches(metin).length;
-
-    Iterable<String> parcalar;
-    if (numaraSayisi >= 2) {
-      parcalar = metin.split(numaraRegex);
-    } else {
-      parcalar = metin.split(RegExp(r'[\r\n]+'));
-    }
-    return parcalar.map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-  }
-
   void _sureHesapla() {
     String metin = _sureController.text;
-    var satirlar = _ayetlereBol(metin);
+    var satirlar = ayetlereBol(metin);
     if (satirlar.isEmpty) {
       _gosterUyari('Ayetleri girin!');
       return;

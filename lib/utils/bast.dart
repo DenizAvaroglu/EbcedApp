@@ -1,4 +1,12 @@
-/// Bast tablosu ve ebced değerinden isim/kelime üretimi.
+/// Bast tablosu ve ebced değerinden kelime üretimi.
+///
+/// Mantık (Âyetel Kürsî 14371 örneğine göre):
+/// 1. Girilen ebced değeri, ebced harflerine ayrılır (ör. 14371 → ي د غ ش ع ا).
+/// 2. Son harfin cinsiyetine bakılır: tek değer = erkek → 5. bast & 5'li grup,
+///    çift değer = dişi → 4. bast & 4'lü grup.
+/// 3. Her harfin ilgili bast değeri tekrar ebced harflerine açılır (nutku).
+/// 4. Tüm harfler sırayla tek satır olarak dizilir, sonra gruplara ayrılıp
+///    kelimeler oluşturulur.
 class BastCalc {
   static const List<(String harf, int bas4, int bas5)> tablo = [
     ('ا', 1641, 991),
@@ -31,66 +39,30 @@ class BastCalc {
     ('غ', 1391, 1820),
   ];
 
-  static const Map<int, String> _basamakHarf = {
-    1: 'ا',
-    2: 'ب',
-    3: 'ج',
-    4: 'د',
-    5: 'ه',
-    6: 'و',
-    7: 'ز',
-    8: 'ح',
-    9: 'ط',
-    10: 'ي',
-    20: 'ك',
-    30: 'ل',
-    40: 'م',
-    50: 'ن',
-    60: 'س',
-    70: 'ع',
-    80: 'ف',
+  /// Basamak değeri → ebced harfi (1→ا, 20→ك, 900→ظ …).
+  static const Map<int, String> _placeHarf = {
+    1: 'ا', 2: 'ب', 3: 'ج', 4: 'د', 5: 'ه', 6: 'و', 7: 'ز', 8: 'ح', 9: 'ط',
+    10: 'ي', 20: 'ك', 30: 'ل', 40: 'م', 50: 'ن', 60: 'س', 70: 'ع', 80: 'ف',
     90: 'ص',
-    100: 'ق',
-    200: 'ر',
-    300: 'ش',
-    400: 'ت',
-    500: 'ث',
-    600: 'خ',
-    700: 'ذ',
-    800: 'ض',
-    900: 'ظ',
-    1000: 'غ',
+    100: 'ق', 200: 'ر', 300: 'ش', 400: 'ت', 500: 'ث', 600: 'خ', 700: 'ذ',
+    800: 'ض', 900: 'ظ',
   };
 
+  /// Harf → ebced değeri (cinsiyet kontrolü için).
+  static const Map<String, int> harfDeger = {
+    'ا': 1, 'ب': 2, 'ج': 3, 'د': 4, 'ه': 5, 'و': 6, 'ز': 7, 'ح': 8, 'ط': 9,
+    'ي': 10, 'ك': 20, 'ل': 30, 'م': 40, 'ن': 50, 'س': 60, 'ع': 70, 'ف': 80,
+    'ص': 90, 'ق': 100, 'ر': 200, 'ش': 300, 'ت': 400, 'ث': 500, 'خ': 600,
+    'ذ': 700, 'ض': 800, 'ظ': 900, 'غ': 1000,
+  };
+
+  /// Harf okunuşları (örnekteki gibi: Ba, Gayın, Hı …).
   static const Map<String, String> okunus = {
-    'ا': 'elif',
-    'ب': 'be',
-    'ج': 'cim',
-    'د': 'dal',
-    'ه': 'he',
-    'و': 'vav',
-    'ز': 'ze',
-    'ح': 'ha',
-    'ط': 'tı',
-    'ي': 'ye',
-    'ك': 'kef',
-    'ل': 'lam',
-    'م': 'mim',
-    'ن': 'nun',
-    'س': 'sin',
-    'ع': 'ayn',
-    'ف': 'fe',
-    'ص': 'sad',
-    'ق': 'kaf',
-    'ر': 're',
-    'ش': 'şın',
-    'ت': 'te',
-    'ث': 'se',
-    'خ': 'hı',
-    'ذ': 'zel',
-    'ض': 'dad',
-    'ظ': 'zı',
-    'غ': 'ğayn',
+    'ا': 'Elif', 'ب': 'Ba', 'ج': 'Cim', 'د': 'Dal', 'ه': 'He', 'و': 'Vav',
+    'ز': 'Ze', 'ح': 'Ha', 'ط': 'Tı', 'ي': 'Ye', 'ك': 'Kef', 'ل': 'Lam',
+    'م': 'Mim', 'ن': 'Nun', 'س': 'Sin', 'ع': 'Ayın', 'ف': 'Fe', 'ص': 'Sad',
+    'ق': 'Kaf', 'ر': 'Ra', 'ش': 'Şın', 'ت': 'Te', 'ث': 'Sa', 'خ': 'Hı',
+    'ذ': 'Zel', 'ض': 'Dad', 'ظ': 'Zı', 'غ': 'Gayın',
   };
 
   static int _tabloDeger(String harf, int basamak) {
@@ -100,82 +72,47 @@ class BastCalc {
     throw ArgumentError('Tabloda harf yok: $harf');
   }
 
-  /// Rakamı basamak değerlerine ayırır: 2135 → [2000, 100, 30, 5]
-  static List<int> basamakDegerleri(int n) {
-    if (n <= 0) return [];
-    final sonuc = <int>[];
-    var place = 1;
-    while (n > 0) {
-      final digit = n % 10;
-      if (digit != 0) {
-        sonuc.insert(0, digit * place);
-      }
-      n ~/= 10;
-      place *= 10;
+  static void _ekleSub1000(int d, List<String> out) {
+    final yuz = (d ~/ 100) * 100;
+    final on = ((d % 100) ~/ 10) * 10;
+    final bir = d % 10;
+    if (yuz > 0) out.add(_placeHarf[yuz]!);
+    if (on > 0) out.add(_placeHarf[on]!);
+    if (bir > 0) out.add(_placeHarf[bir]!);
+  }
+
+  /// Bir sayıyı ebced harflerine ayırır (yüksekten düşüğe, ١٠٠٠ = غ işareti).
+  /// 1000-1999 → غ + kalan (baştaki "1" yazılmaz),
+  /// 2000+ → binler basamağı + غ + kalan.
+  static List<String> harflereAyir(int deger) {
+    if (deger <= 0) return [];
+    final out = <String>[];
+    if (deger < 1000) {
+      _ekleSub1000(deger, out);
+    } else if (deger < 2000) {
+      out.add('غ');
+      _ekleSub1000(deger % 1000, out);
+    } else {
+      final binler = deger ~/ 1000;
+      final rem = deger % 1000;
+      _ekleSub1000(binler, out);
+      out.add('غ');
+      _ekleSub1000(rem, out);
     }
-    return sonuc;
+    return out;
   }
 
-  /// Basamak değerini ebced harfine çevirir (900→ظ, 20→ك, 1→ا …).
-  static String? _degerdenHarf(int deger) => _basamakHarf[deger];
-
-  /// Girdi rakamındaki basamak hanesi → harf (2→ب, 1→ا …).
-  static String _rakamdanHarf(int rakam) {
-    final h = _basamakHarf[rakam];
-    if (h == null) throw ArgumentError('Geçersiz rakam: $rakam');
-    return h;
-  }
-
-  /// Bast tablo değerini harf listesine açar.
-  /// Son rakam tek ise ve 20 bileşeni varsa 5'li tamamlamak için غ ve ض eklenir.
-  static List<String> _tabloDegeriniAc(int deger, int basamak) {
-    final harfler = <String>[];
-    final parcalar = basamakDegerleri(deger);
-    for (final p in parcalar) {
-      final h = _degerdenHarf(p);
-      if (h != null) harfler.add(h);
-    }
-    final sonRakam = deger % 10;
-    if (sonRakam.isOdd && parcalar.contains(20)) {
-      harfler.add('غ');
-      harfler.add('ض');
-    }
-    return harfler;
-  }
-
-  /// Ebced girdisinin her basamak hanesi → tablo değeri → harf açılımı.
-  static List<String> _girdidenHarfler(int ebced, int basamak) {
-    final harfler = <String>[];
-    final parcalar = basamakDegerleri(ebced);
-    for (final p in parcalar) {
-      final rakam = p ~/ _placeOf(p);
-      final harf = _rakamdanHarf(rakam);
-      final tabloDeger = _tabloDeger(harf, basamak);
-      harfler.addAll(_tabloDegeriniAc(tabloDeger, basamak));
-    }
-    return harfler;
-  }
-
-  static int _placeOf(int v) {
-    if (v >= 1000) return 1000;
-    if (v >= 100) return 100;
-    if (v >= 10) return 10;
-    return 1;
-  }
-
-  /// 4 veya 5'li gruplara ayırır (son rakam tek→5, çift→4).
-  static List<List<String>> _kelimelereBol(
-    List<String> harfler,
-    int grupBoyutu,
-  ) {
+  /// Harfleri 4 veya 5'li gruplara ayırır. Sonda yalnızca 1 harf kalırsa
+  /// önceki kelimeye eklenir; 2-3 harf kalırsa kendi başına kelime olur.
+  static List<List<String>> _kelimelereBol(List<String> harfler, int grup) {
     if (harfler.isEmpty) return [];
     final kelimeler = <List<String>>[];
     var i = 0;
     while (i < harfler.length) {
       final kalan = harfler.length - i;
-      if (kalan > grupBoyutu) {
-        kelimeler.add(harfler.sublist(i, i + grupBoyutu));
-        i += grupBoyutu;
+      if (kalan > grup) {
+        kelimeler.add(harfler.sublist(i, i + grup));
+        i += grup;
       } else {
         if (kalan == 1 && kelimeler.isNotEmpty) {
           kelimeler.last.addAll(harfler.sublist(i));
@@ -188,29 +125,46 @@ class BastCalc {
     return kelimeler;
   }
 
-  static String _kelimeSatir(List<String> harfler) {
+  static String kelimeSatir(List<String> harfler) {
     final arapca = harfler.join(' ');
-    final ok = harfler.map((h) => okunus[h] ?? h).join(' ');
-    return '$arapca ($ok)';
+    final ad = harfler.map((h) => okunus[h] ?? h).join(', ');
+    return '$arapca  ($ad)';
   }
 
-  /// Ana hesap: ebced → kelime satırları (Arapça + okunuş).
   static BastSonuc hesapla(int ebced) {
     if (ebced <= 0) {
       throw ArgumentError('Geçerli bir ebced değeri girin.');
     }
 
-    final sonRakam = ebced % 10;
-    final basamak = sonRakam.isOdd ? 5 : 4;
-    final grupBoyutu = basamak;
+    final girdiHarfler = harflereAyir(ebced);
+    if (girdiHarfler.isEmpty) {
+      throw ArgumentError('Değer harflere ayrılamadı.');
+    }
 
-    final tumHarfler = _girdidenHarfler(ebced, basamak);
-    final kelimeler = _kelimelereBol(tumHarfler, grupBoyutu);
-    final satirlar = kelimeler.map(_kelimeSatir).toList();
+    final sonHarf = girdiHarfler.last;
+    final sonDeger = harfDeger[sonHarf] ?? 1;
+    final erkek = sonDeger.isOdd;
+    final basamak = erkek ? 5 : 4;
+    final grup = erkek ? 5 : 4;
+
+    final tumHarfler = <String>[];
+    final adimlar = <BastAdim>[];
+    for (final h in girdiHarfler) {
+      final deg = _tabloDeger(h, basamak);
+      final acilim = harflereAyir(deg);
+      adimlar.add(BastAdim(harf: h, deger: deg, acilim: acilim));
+      tumHarfler.addAll(acilim);
+    }
+
+    final kelimeler = _kelimelereBol(tumHarfler, grup);
+    final satirlar = kelimeler.map(kelimeSatir).toList();
 
     return BastSonuc(
       ebced: ebced,
+      girdiHarfler: girdiHarfler,
+      erkek: erkek,
       basamak: basamak,
+      adimlar: adimlar,
       tumHarfler: tumHarfler,
       kelimeler: kelimeler,
       satirlar: satirlar,
@@ -218,17 +172,35 @@ class BastCalc {
   }
 }
 
+class BastAdim {
+  const BastAdim({
+    required this.harf,
+    required this.deger,
+    required this.acilim,
+  });
+
+  final String harf;
+  final int deger;
+  final List<String> acilim;
+}
+
 class BastSonuc {
   const BastSonuc({
     required this.ebced,
+    required this.girdiHarfler,
+    required this.erkek,
     required this.basamak,
+    required this.adimlar,
     required this.tumHarfler,
     required this.kelimeler,
     required this.satirlar,
   });
 
   final int ebced;
+  final List<String> girdiHarfler;
+  final bool erkek;
   final int basamak;
+  final List<BastAdim> adimlar;
   final List<String> tumHarfler;
   final List<List<String>> kelimeler;
   final List<String> satirlar;

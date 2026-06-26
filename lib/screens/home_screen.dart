@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/isim_turu.dart';
+import '../utils/ayet_bolme.dart';
 import '../utils/ebced_calculator.dart';
 import '../widgets/isim_turu_dropdown.dart';
 
@@ -24,9 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String metin = _ayetController.text;
     if (metin.trim().isEmpty) return;
 
-    var satirlar = metin.split(RegExp(r'[\r\n]+'))
-        .where((s) => s.trim().isNotEmpty)
-        .toList();
+    var satirlar = ayetlereBol(metin);
 
     int cikarilacak = _seciliTur.cikarilacakDeger;
     String ek = _seciliTur.ek;
