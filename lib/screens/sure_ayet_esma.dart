@@ -38,10 +38,25 @@ class _SureAyetEsmaScreenState extends State<SureAyetEsmaScreen>
   }
 
   // ═══════════════ SURE ═══════════════
+  // Ayetleri böler. Metinde ayet numarası (1. 2. 3. veya Arapça ٠١٢ /
+  // Farsça ۰۱۲ rakamları) varsa bunlara göre böler — böylece uzun ayetler
+  // alt satıra kaysa bile doğru sayılır. Numara yoksa satır sonlarına göre böler.
+  static List<String> _ayetlereBol(String metin) {
+    final numaraRegex = RegExp(r'[0-9\u0660-\u0669\u06F0-\u06F9\u06DD]+');
+    final numaraSayisi = numaraRegex.allMatches(metin).length;
+
+    Iterable<String> parcalar;
+    if (numaraSayisi >= 2) {
+      parcalar = metin.split(numaraRegex);
+    } else {
+      parcalar = metin.split(RegExp(r'[\r\n]+'));
+    }
+    return parcalar.map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+  }
+
   void _sureHesapla() {
     String metin = _sureController.text;
-    var satirlar = metin.split(RegExp(r'[\r\n]+'))
-        .where((s) => s.trim().isNotEmpty).toList();
+    var satirlar = _ayetlereBol(metin);
     if (satirlar.isEmpty) {
       _gosterUyari('Ayetleri girin!');
       return;
@@ -413,7 +428,9 @@ class _SureAyetEsmaScreenState extends State<SureAyetEsmaScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Surenin ayetlerini girin (her satır bir ayet):',
+          const Text(
+              'Surenin ayetlerini girin. Ayet numarası (1. 2. 3. …) varsa '
+              'ona göre, yoksa her satır bir ayet sayılır:',
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Expanded(
