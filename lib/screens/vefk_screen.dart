@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../utils/vefk_gram.dart';
+import 'bast_tab.dart';
 import 'teksir_tab.dart';
 import 'vefk_referans_screen.dart';
 
@@ -83,7 +84,7 @@ class VefkScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Vefk Hesaplama'),
@@ -102,6 +103,7 @@ class VefkScreen extends StatelessWidget {
               Tab(text: "4'lü Vefk"),
               Tab(text: "5'li Vefk"),
               Tab(text: 'Teksir'),
+              Tab(text: 'Bast'),
             ],
           ),
         ),
@@ -115,6 +117,7 @@ class VefkScreen extends StatelessWidget {
                   _Vefk4Tab(),
                   _Vefk5Tab(),
                   TeksirTab(),
+                  BastTab(),
                 ],
               ),
             ),
